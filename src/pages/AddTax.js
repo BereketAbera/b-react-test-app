@@ -1,25 +1,24 @@
-import { Field, FieldArray, Form, Formik, useFormik } from 'formik';
+import { Field, FieldArray, Form, Formik } from 'formik';
 import React, { useEffect, useState } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 
 import Checkbox from '../components/CheckBox';
 import TextInput from '../components/TextInput';
 // import
-import { getAllItems } from '../mock/index';
+import { filterItems, getAllItems } from '../mock/index';
 import Button from '../components/Button';
+import RadioButton from '../components/RadioButton';
 
-function AddTax(props) {
+function AddTax() {
   const [categorizedItems, setCategorizedItems] = useState({});
   const [categories, setCategories] = useState([]);
-  const [checked, setChecked] = useState(true);
   const [search, setSearch] = useState('');
 
   const initialValues = {
     applicable_items: [],
     applied_to: 'some',
-    name: 'test name',
-    rate: 0.04,
-    selectedCategories: [],
+    name: '',
+    rate: 0.05,
   };
 
   useEffect(() => {
@@ -29,9 +28,17 @@ function AddTax(props) {
     })();
   }, []);
 
+  useEffect(() => {
+    const filter = async () => {
+      const res = await filterItems(search);
+      organizeByCategory(res);
+    };
+    if (search) filter(search);
+  }, [search]);
+
   const organizeByCategory = (resItems) => {
     let orgByCate = {};
-    resItems.forEach((resItem) => {
+    resItems?.forEach((resItem) => {
       if (resItem.category) {
         if (!orgByCate[resItem?.category?.name]) {
           orgByCate[resItem?.category?.name] = [
@@ -59,17 +66,33 @@ function AddTax(props) {
   };
 
   const onSubmit = (values) => {
-    // console.log(values);
+    console.log(values);
   };
 
   const getCategoryItemIds = (category) => {
-    return categorizedItems[category].map((ci) => ci.id);
+    return categorizedItems[category]?.map((ci) => ci.id);
+  };
+
+  const getUniqueItems = (uniqueFrom, uniqueAgainst) => {
+    return uniqueFrom.filter((item) => {
+      return !uniqueAgainst.includes(item);
+    });
+  };
+
+  const selectAllItems = (values, setValues) => {
+    let itemIds = [];
+    categories.forEach((category) => {
+      itemIds = [...itemIds, ...getCategoryItemIds(category)];
+    });
+
+    // console.log({ ...values, applicable_items: [...itemIds] });
+    setValues({ ...values, applied_to: 'all', applicable_items: [...itemIds] });
   };
 
   const renderCategoryItems = (category, values, setValues) => {
-    return categorizedItems[category].map((item) => {
+    return categorizedItems[category]?.map((item) => {
       return (
-        <div className="mt-4 w-full pl-4">
+        <div key={item.id} className="mt-4 w-full pl-4">
           <label className="text-sm w-full inline-block px-3 py-2">
             <Checkbox
               checked={values?.applicable_items?.includes(item.id)}
@@ -81,6 +104,7 @@ function AddTax(props) {
                 setValues({
                   ...values,
                   applicable_items: [...applicable_items],
+                  applied_to: 'some',
                 });
               }}
               color="#327B91"
@@ -93,15 +117,15 @@ function AddTax(props) {
   };
 
   const renderItems = (values, setValues) => {
-    return categories.map((category) => {
+    return categories?.map((category, index) => {
       return (
-        <>
+        <div key={category + index}>
           <div className="mt-4 w-full">
             <label className="text-sm w-full inline-block bg-gray-200 px-3 py-2">
               <Checkbox
                 checked={(() => {
                   let check = true;
-                  categorizedItems[category].forEach((ci) => {
+                  categorizedItems[category]?.forEach((ci) => {
                     if (!values?.applicable_items?.includes(ci.id)) {
                       check = false;
                     }
@@ -112,12 +136,19 @@ function AddTax(props) {
                   let checked = e.target.checked;
                   let categoryItemIds = getCategoryItemIds(category);
                   let applicable_items = checked
-                    ? [...values?.applicable_items, ...categoryItemIds]
+                    ? [
+                        ...values?.applicable_items,
+                        ...getUniqueItems(
+                          categoryItemIds,
+                          values?.applicable_items,
+                        ),
+                      ]
                     : values?.applicable_items?.filter(
                         (ai) => !categoryItemIds.includes(ai),
                       );
                   setValues({
                     ...values,
+                    applied_to: 'some',
                     applicable_items: [...applicable_items],
                   });
                 }}
@@ -127,7 +158,7 @@ function AddTax(props) {
           </div>
 
           {renderCategoryItems(category, values, setValues)}
-        </>
+        </div>
       );
     });
   };
@@ -135,11 +166,7 @@ function AddTax(props) {
   return (
     <div className="max-w-3xl mx-auto shadow-md py-8 my-4 text-gray-700">
       <h1 className="text-2xl mb-4 px-8">Add Tax</h1>
-      <Formik
-        initialValues={initialValues}
-        // validationSchema={validationSchema}
-        onSubmit={onSubmit}
-      >
+      <Formik initialValues={initialValues} onSubmit={onSubmit}>
         {({ errors, values, touched, setValues }) => (
           <Form>
             <div className="flex mb-2 px-8 max-w-xl">
@@ -165,25 +192,72 @@ function AddTax(props) {
                 )}
               </Field>
             </div>
+            <div className="flex-col px-9 my-4 text-sm">
+              <Field name="applied_to">
+                {({ field }) => (
+                  <label className="block mb-2">
+                    <RadioButton
+                      {...field}
+                      selected={values?.applied_to === 'all'}
+                      value="all"
+                      onChange={(e) => {
+                        let selected = e.target.selected;
+                        if (!selected) {
+                          selectAllItems(values, setValues);
+                        }
+                      }}
+                    ></RadioButton>
+                    <span className="ml-2">
+                      Apply to all items in collection
+                    </span>
+                  </label>
+                )}
+              </Field>
+              <Field name="applied_to">
+                {({ field }) => (
+                  <label className="block">
+                    <RadioButton
+                      {...field}
+                      onChange={(e) => {
+                        let selected = e.target.selected;
+                        if (!selected) {
+                          setValues({ ...values, applied_to: 'some' });
+                        }
+                      }}
+                      selected={values?.applied_to === 'some'}
+                      value="some"
+                    ></RadioButton>
+                    <span className="ml-2">Apply to specific items</span>
+                  </label>
+                )}
+              </Field>
+            </div>
             <FieldArray name="applicable_items">
               <div className="w-full border-t border-gray-200 px-8 mt-4 py-4">
                 <TextInput
                   value={search}
-                  onChange={setSearch}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="w-72"
                   placeholder="Search Items"
                   prefix={() => (
                     <AiOutlineSearch className="text-md text-gray-500" />
                   )}
                 />
-                {renderItems(values, setValues)}
+                {categories?.length > 0 && renderItems(values, setValues)}
+                {categories?.length === 0 && (
+                  <div className="text-gray-600 text-center p-4 my-4">
+                    No Items Found
+                  </div>
+                )}
               </div>
             </FieldArray>
-            <div className="w-full flex justify-end px-8">
-              <Button type="submit">
-                Apply tax to {values?.applicable_items?.length} item(s)
-              </Button>
-            </div>
+            {categories?.length > 0 && (
+              <div className="w-full flex justify-end px-8">
+                <Button type="submit">
+                  Apply tax to {values?.applicable_items?.length} item(s)
+                </Button>
+              </div>
+            )}
           </Form>
         )}
       </Formik>

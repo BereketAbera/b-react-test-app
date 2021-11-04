@@ -24,7 +24,11 @@ const Btn = styled.button`
 
 function Button({ children, className, color, ...props }) {
   return (
-    <Btn color={color} className={`px-4 py-2 text-lg text-white ${className}`}>
+    <Btn
+      {...props}
+      color={color}
+      className={`px-4 py-2 text-lg text-white ${className}`}
+    >
       {children}
     </Btn>
   );

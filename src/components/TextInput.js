@@ -24,6 +24,7 @@ function TextInput({ className, suffix, prefix, ...props }) {
     if (typeof exts === 'string') return exts;
     else return exts();
   };
+
   return (
     <div className={`relative ${className}`}>
       {prefix && (
@@ -46,6 +47,8 @@ function TextInput({ className, suffix, prefix, ...props }) {
   );
 }
 
-TextInput.propTypes = {};
+TextInput.propTypes = {
+  className: PropTypes.string,
+};
 
 export default TextInput;
