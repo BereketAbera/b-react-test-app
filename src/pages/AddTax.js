@@ -85,7 +85,6 @@ function AddTax() {
       itemIds = [...itemIds, ...getCategoryItemIds(category)];
     });
 
-    // console.log({ ...values, applicable_items: [...itemIds] });
     setValues({ ...values, applied_to: 'all', applicable_items: [...itemIds] });
   };
 
@@ -184,6 +183,15 @@ function AddTax() {
                 {({ field }) => (
                   <TextInput
                     {...field}
+                    onChange={(e) => {
+                      setValues({
+                        ...values,
+                        rate: isNaN(e.target.value)
+                          ? e.target.value
+                          : parseInt(e.target.value) / 100,
+                      });
+                    }}
+                    value={values?.rate ? values?.rate * 100 : ''}
                     className="w-1/4"
                     placeholder="Tax Value"
                     suffix="%"
@@ -200,9 +208,8 @@ function AddTax() {
                       {...field}
                       selected={values?.applied_to === 'all'}
                       value="all"
-                      onChange={(e) => {
-                        let selected = e.target.selected;
-                        if (!selected) {
+                      onClick={(e) => {
+                        if (values?.applied_to === 'some') {
                           selectAllItems(values, setValues);
                         }
                       }}
@@ -218,14 +225,13 @@ function AddTax() {
                   <label className="block">
                     <RadioButton
                       {...field}
-                      onChange={(e) => {
-                        let selected = e.target.selected;
-                        if (!selected) {
+                      selected={values?.applied_to === 'some'}
+                      value="some"
+                      onClick={(e) => {
+                        if (values?.applied_to === 'all') {
                           setValues({ ...values, applied_to: 'some' });
                         }
                       }}
-                      selected={values?.applied_to === 'some'}
-                      value="some"
                     ></RadioButton>
                     <span className="ml-2">Apply to specific items</span>
                   </label>
