@@ -1,9 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import tinycolor from 'tinycolor2';
 
 const Input = styled.input`
-  border: 1px solid #aaa;
+  border: 1px solid
+    ${(props) =>
+      props.touched && props.invalid ? tinycolor('red').lighten(20) : '#aaa'};
   border-radius: 4px;
   &:placeholder {
     color: #333;

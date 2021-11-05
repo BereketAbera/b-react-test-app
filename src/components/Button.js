@@ -6,13 +6,14 @@ import tinycolor from 'tinycolor2';
 const Btn = styled.button`
   background: ${(props) => props.color};
   border-radius: 3px;
+  border: 1px solid transparent;
   &:hover {
-    border: 1px solid #888;
+    border: 1px solid white;
     outline: none;
     background-color: ${(props) => tinycolor(props.color).darken(10)};
   }
   &:focus {
-    border: 1px solid #888;
+    border: 1px solid white;
     outline: none;
     background-color: ${(props) => tinycolor(props.color).darken(10)};
   }

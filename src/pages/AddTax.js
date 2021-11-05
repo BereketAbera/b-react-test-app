@@ -5,9 +5,9 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import Checkbox from '../components/CheckBox';
 import TextInput from '../components/TextInput';
 // import
-import { filterItems, getAllItems } from '../mock/index';
 import Button from '../components/Button';
 import RadioButton from '../components/RadioButton';
+import { restFetchItems } from '../services/itemsService';
 
 function AddTax() {
   const [categorizedItems, setCategorizedItems] = useState({});
@@ -21,21 +21,44 @@ function AddTax() {
     rate: 0.05,
   };
 
+  /**
+   * Make initial request to get items
+   */
   useEffect(() => {
     (async () => {
-      const res = await getAllItems();
+      const res = await restFetchItems('');
       organizeByCategory(res);
     })();
   }, []);
 
+  /**
+   * Make filter request on search state change
+   */
   useEffect(() => {
-    const filter = async () => {
-      const res = await filterItems(search);
+    (async () => {
+      const res = await restFetchItems(search);
       organizeByCategory(res);
-    };
-    if (search) filter(search);
+    })();
   }, [search]);
 
+  /**
+   * Form validator
+   * @param {*} values
+   * @returns
+   */
+  const validate = (values) => {
+    const errors = {};
+
+    if (!values.name) errors.name = 'Required';
+    if (!values.rate) errors.rate = 'Required';
+
+    return errors;
+  };
+
+  /**
+   * Randers all filtered items
+   * @param {*} resItems
+   */
   const organizeByCategory = (resItems) => {
     let orgByCate = {};
     resItems?.forEach((resItem) => {
@@ -65,20 +88,41 @@ function AddTax() {
     setCategories(Object.keys(orgByCate).sort((a, b) => (a > b ? -1 : 1)));
   };
 
+  /**
+   * Will submit form result to the appropriate api
+   * @param {*} values
+   */
   const onSubmit = (values) => {
     console.log(values);
+    alert(JSON.stringify(values, null, 4));
   };
 
+  /**
+   * Get the ids for category items
+   * @param {*} category
+   * @returns array ids of the items for the given category
+   */
   const getCategoryItemIds = (category) => {
     return categorizedItems[category]?.map((ci) => ci.id);
   };
 
+  /**
+   * Get unique ids in first argument against the values in the second argument
+   * @param {*} uniqueFrom
+   * @param {*} uniqueAgainst
+   * @returns array of unique items
+   */
   const getUniqueItems = (uniqueFrom, uniqueAgainst) => {
     return uniqueFrom.filter((item) => {
       return !uniqueAgainst.includes(item);
     });
   };
 
+  /**
+   * Select all available items in items list
+   * @param {*} values
+   * @param {*} setValues
+   */
   const selectAllItems = (values, setValues) => {
     let itemIds = [];
     categories.forEach((category) => {
@@ -88,6 +132,13 @@ function AddTax() {
     setValues({ ...values, applied_to: 'all', applicable_items: [...itemIds] });
   };
 
+  /**
+   * Render items of a given category
+   * @param {*} category
+   * @param {*} values
+   * @param {*} setValues
+   * @returns jsx of renders items
+   */
   const renderCategoryItems = (category, values, setValues) => {
     return categorizedItems[category]?.map((item) => {
       return (
@@ -115,6 +166,12 @@ function AddTax() {
     });
   };
 
+  /**
+   * Render all items
+   * @param {*} values
+   * @param {*} setValues
+   * @returns jsx of all rendered items
+   */
   const renderItems = (values, setValues) => {
     return categories?.map((category, index) => {
       return (
@@ -165,7 +222,11 @@ function AddTax() {
   return (
     <div className="max-w-3xl mx-auto shadow-md py-8 my-4 text-gray-700">
       <h1 className="text-2xl mb-4 px-8">Add Tax</h1>
-      <Formik initialValues={initialValues} onSubmit={onSubmit}>
+      <Formik
+        validate={validate}
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+      >
         {({ errors, values, touched, setValues }) => (
           <Form>
             <div className="flex mb-2 px-8 max-w-xl">
@@ -176,6 +237,8 @@ function AddTax() {
                     className="w-3/4 mr-2"
                     placeholder="Tax Name"
                     type="text"
+                    touched={touched.name}
+                    invalid={errors.name}
                   />
                 )}
               </Field>
@@ -196,6 +259,8 @@ function AddTax() {
                     placeholder="Tax Value"
                     suffix="%"
                     type="number"
+                    touched={touched.rate}
+                    invalid={errors.rate}
                   />
                 )}
               </Field>
@@ -238,17 +303,22 @@ function AddTax() {
                 )}
               </Field>
             </div>
+            <div className="w-full border-t border-gray-200 px-8 mt-4 pt-4">
+              <TextInput
+                value={search}
+                onChange={(e) => {
+                  setValues({ ...values, applicable_items: [] });
+                  setSearch(e.target.value);
+                }}
+                className="w-72"
+                placeholder="Search Items"
+                prefix={() => (
+                  <AiOutlineSearch className="text-md text-gray-500" />
+                )}
+              />
+            </div>
             <FieldArray name="applicable_items">
-              <div className="w-full border-t border-gray-200 px-8 mt-4 py-4">
-                <TextInput
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-72"
-                  placeholder="Search Items"
-                  prefix={() => (
-                    <AiOutlineSearch className="text-md text-gray-500" />
-                  )}
-                />
+              <div className="w-full px-8">
                 {categories?.length > 0 && renderItems(values, setValues)}
                 {categories?.length === 0 && (
                   <div className="text-gray-600 text-center p-4 my-4">

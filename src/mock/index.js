@@ -1,15 +1,24 @@
 import mockResource from './resource.json';
 
-export const getAllItems = () => {
+/**
+ * Mock api resource
+ * @param {*} q
+ * @returns
+ */
+export const getMockItems = (q) => {
   return new Promise((resolve) => {
-    setTimeout(resolve(mockResource), 200);
-  });
-};
-
-export const filterItems = (q) => {
-  return new Promise((resolve) => {
-    setTimeout(
-      resolve(mockResource.filter((mr) => JSON.stringify(mr).includes(q))),
-    );
+    setTimeout(() => {
+      if (!q) resolve(mockResource);
+      else {
+        resolve(
+          mockResource.filter((mr) =>
+            JSON.stringify(mr)
+              .replace(/{|}/g, '')
+              .toLocaleLowerCase()
+              .includes(q.toLocaleLowerCase()),
+          ),
+        );
+      }
+    });
   });
 };

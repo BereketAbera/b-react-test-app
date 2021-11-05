@@ -121,46 +121,6 @@
     ]
   },
   {
-    "id": 14823,
-    "tab_id": 3202,
-    "name": "Jasinthe Necklace",
-    "amount": 26.0,
-    "amount_type": "fixed",
-    "allow_quantity": null,
-    "deleted_at": null,
-    "required": false,
-    "created_at": "2018-07-02T14:11:00.317Z",
-    "updated_at": "2018-07-10T13:24:53.733Z",
-    "type": "TabItem",
-    "position": 2,
-    "anchor": null,
-    "parent_id": 14866,
-    "catalog_object_id": 8463,
-    "description": null,
-    "available_quantity": 19,
-    "hidden": false,
-    "options": { "makeAvailableQuantityPublic": true },
-    "tsv": "'bracelet':2 'jasinth':1",
-    "quantity_sold": 1,
-    "amount_sold": 26.0,
-    "total_buyers": 1,
-    "quantity_refunded": 0,
-    "amount_discounted": 5.2,
-    "amount_refunded": 0.0,
-    "net_amount": 20.8,
-    "net_quantity": 1,
-    "subcategory": null,
-    "category": { "id": 14832, "name": "Necklace", "options": {} },
-    "images": [
-      {
-        "id": 5571,
-        "upload_path": "uploads/image/image_file/1742/jasinthe_bracelet.jpg",
-        "metadata": {},
-        "url": "https://images.cheddarcdn.com/eyJidWNrZXQiOiJjaGVkZGFyLXVwLXJldmlldyIsImtleSI6InVwbG9hZHMvaW1hZ2UvaW1hZ2VfZmlsZS8xNzQyL2phc2ludGhlX2JyYWNlbGV0LmpwZyIsIm91dHB1dEZvcm1hdCI6ImpwZWciLCJlZGl0cyI6eyJmbGF0dGVuIjp7ImJhY2tncm91bmQiOnsiciI6MjU1LCJnIjoyNTUsImIiOjI1NX19fX0="
-      }
-    ]
-  },
-  {
     "id": 14868,
     "tab_id": 3202,
     "name": "Recurring Item with questions",
